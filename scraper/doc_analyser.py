@@ -1,7 +1,7 @@
 
 from typing import Callable, List, NamedTuple
 from bs4 import BeautifulSoup
-
+import humanfriendly
 
 class DocMetaTag(NamedTuple):
     name: str
@@ -11,6 +11,11 @@ class DocMetaTag(NamedTuple):
 class DocSummary(NamedTuple):
     page_title: str
     meta_tags: List[DocMetaTag]
+    doc_size: int
+
+    @property
+    def doc_size_human_friendly(self) -> str:
+        return humanfriendly.format_size(self.doc_size)
 
 
 class DocAnalyser:
@@ -24,7 +29,8 @@ class DocAnalyser:
 
         doc_summary_dict = {
             'page_title': soup.title.string if soup.title else None,
-            'meta_tags': self._get_meta_tags(soup)
+            'meta_tags': self._get_meta_tags(soup),
+            'doc_size': len(html_doc),
         }
 
         return DocSummary(**doc_summary_dict)
