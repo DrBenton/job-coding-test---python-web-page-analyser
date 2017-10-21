@@ -19,6 +19,14 @@ class DocSummary(NamedTuple):
     def doc_size_human_friendly(self) -> str:
         return humanfriendly.format_size(self.doc_size)
 
+    @property
+    def word_count(self) -> int:
+        return len(self.body_content.split(' '))
+
+    @property
+    def unique_word_count(self) -> int:
+        return len(set(self.body_content.split(' ')))
+
 
 class DocAnalyser:
 

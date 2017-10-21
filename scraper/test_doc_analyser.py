@@ -6,7 +6,7 @@ from scraper.doc_analyser import DocAnalyser
 def test_parsing_title():
     html_doc = '<html><head><title>Hello Plum!</title></head><body>Once upon a time there were three little sisters</body></html>'
 
-    sut = DocAnalyser(doc_fetcher_mock(html_doc))
+    sut = DocAnalyser(_doc_fetcher_mock(html_doc))
     doc_summary = sut.analyse('http://dummy.com')
 
     assert doc_summary.page_title == 'Hello Plum!'
@@ -36,7 +36,7 @@ def test_parsing_meta():
     </html>
     """
 
-    sut = DocAnalyser(doc_fetcher_mock(html_doc))
+    sut = DocAnalyser(_doc_fetcher_mock(html_doc))
     doc_summary = sut.analyse('https://www.python.org/dev/peps/pep-0274/')
 
     expected_results = (
@@ -56,7 +56,7 @@ def test_parsing_meta():
 
 
 def test_doc_size():
-    sut = DocAnalyser(doc_fetcher_mock(_test_real_doc_content))
+    sut = DocAnalyser(_doc_fetcher_mock(_test_real_doc_content))
     doc_summary = sut.analyse('https://docs.djangoproject.com/en/1.11/misc/design-philosophies/')
 
     assert doc_summary.doc_size == 38623
@@ -66,20 +66,39 @@ def test_doc_size():
 def test_parsing_body_content():
     html_doc_with_title = '<html><head><title>Hello Plum!</title></head><body>Once upon a <b>time</b> there were <span class="highlight"><i>three</i> little sisters</span></body></html>'
 
-    sut = DocAnalyser(doc_fetcher_mock(html_doc_with_title))
+    sut = DocAnalyser(_doc_fetcher_mock(html_doc_with_title))
     doc_summary = sut.analyse('http://dummy.com')
 
     assert doc_summary.body_content == 'Once upon a time there were three little sisters'
 
     html_doc_without_title = '<html><head></head><body>Once upon a <b>time</b> there were <span class="highlight"><i>three</i> little sisters</span></body></html>'
 
-    sut = DocAnalyser(doc_fetcher_mock(html_doc_without_title))
+    sut = DocAnalyser(_doc_fetcher_mock(html_doc_without_title))
     doc_summary = sut.analyse('http://dummy.com')
 
     assert doc_summary.body_content == 'Once upon a time there were three little sisters'
 
 
-def doc_fetcher_mock(expected_fetched_doc: str) ->Callable:
+def test_parsing_word_count():
+    html_doc = '<html><head><title>Hello Plum!</title></head><body>Once upon a time there were three little sisters</body></html>'
+
+    sut = DocAnalyser(_doc_fetcher_mock(html_doc))
+    doc_summary = sut.analyse('http://dummy.com')
+
+    assert doc_summary.word_count == 9
+
+
+def test_parsing_unique_word_count():
+    html_doc = '<html><head><title>Hello Plum!</title></head><body>Once upon a time upon there were little three little sisters</body></html>'
+
+    sut = DocAnalyser(_doc_fetcher_mock(html_doc))
+    doc_summary = sut.analyse('http://dummy.com')
+
+    assert doc_summary.word_count == 11
+    assert doc_summary.unique_word_count == 9
+
+
+def _doc_fetcher_mock(expected_fetched_doc: str) ->Callable:
     def mock(url: str) ->str:
         return expected_fetched_doc
 
