@@ -127,6 +127,31 @@ def test_parsing_missing_keywords():
     assert doc_summary.missing_meta_keywords == ['programming', 'language', 'object', 'oriented', 'software', 'license', 'download']
 
 
+def test_parsing_links():
+    html_doc = """
+    <html>
+        <body>
+            Once upon a web time there were three little <A hRef="/">Python</a> sisters downloading free open source 
+            <a href="https://www.crummy.com/software/BeautifulSoup/bs4/doc/">documentation</span> for their
+            <a href="https://www.python.org/community/" target="_blank">community</a>
+        </body>
+    </html>
+    """
+
+    sut = DocAnalyser(_doc_fetcher_mock(html_doc))
+    doc_summary = sut.analyse('http://dummy.com')
+
+    expected_results = (
+        ('Python', '/'),
+        ('documentation', 'https://www.crummy.com/software/BeautifulSoup/bs4/doc/'),
+        ('community', 'https://www.python.org/community/'),
+    )
+
+    assert len(doc_summary.links) == len(expected_results)
+    for link_index, expected in enumerate(expected_results):
+        assert doc_summary.links[link_index].text == expected[0] and doc_summary.links[link_index].href == expected[1]
+
+
 def _doc_fetcher_mock(expected_fetched_doc: str) ->Callable:
     def mock(url: str) ->str:
         return expected_fetched_doc

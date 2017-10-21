@@ -10,11 +10,17 @@ class DocMetaTag(NamedTuple):
     content: str
 
 
+class DocLink(NamedTuple):
+    text: str
+    href: str
+
+
 class DocSummary(NamedTuple):
     page_title: str
     meta_tags: List[DocMetaTag]
     doc_size: int
     body_content: str
+    links: List[DocLink]
 
     @property
     def doc_size_human_friendly(self) -> str:
@@ -37,7 +43,7 @@ class DocSummary(NamedTuple):
         return len(self.unique_words)
 
     @property
-    def most_common_5_words(self) -> int:
+    def most_common_5_words(self) -> List[str]:
         counter = Counter(self.words)
         return counter.most_common(5)
 
@@ -75,14 +81,19 @@ class DocAnalyser:
             'page_title': soup.title.string if soup.title else None,
             'meta_tags': self._get_meta_tags(soup),
             'doc_size': len(html_doc),
+            'links': self._get_links(soup),
         }
+        # BeautifulSoup's `get_text()` method is quite convenient, but it prefixes the `<body>` text content
+        # with the page title, which is not what we want.
+        # --> let's strip the title prefix from the `get_text()` result:
         doc_summary_dict['body_content'] = soup.get_text()[
             (len(doc_summary_dict['page_title']) if doc_summary_dict['page_title'] is not None else 0):
         ]
 
         return DocSummary(**doc_summary_dict)
 
-    def _get_meta_tags(self, soup: BeautifulSoup) -> List[DocMetaTag]:
+    @staticmethod
+    def _get_meta_tags(soup: BeautifulSoup) -> List[DocMetaTag]:
         meta_tags = []
         for meta in soup.find_all('meta'):
             content: str = meta.get('content')
@@ -100,3 +111,7 @@ class DocAnalyser:
             meta_tags.append(DocMetaTag(name=name, content=content))
 
         return meta_tags
+
+    @staticmethod
+    def _get_links(soup: BeautifulSoup) -> List[DocLink]:
+        return [DocLink(a.string, a.get('href')) for a in soup.find_all('a')]
