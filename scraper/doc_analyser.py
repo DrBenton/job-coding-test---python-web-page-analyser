@@ -1,6 +1,6 @@
 
 from collections import Counter
-from typing import Callable, List, NamedTuple
+from typing import Callable, NamedTuple, Optional, List, Set, Tuple
 from bs4 import BeautifulSoup
 import humanfriendly
 
@@ -21,8 +21,12 @@ class DocSummary(NamedTuple):
         return humanfriendly.format_size(self.doc_size)
 
     @property
-    def words(self) -> List[str]:
-        return self.body_content.split(' ')
+    def words(self) -> Tuple[str]:
+        return tuple([word.strip() for word in self.body_content.split(' ') if word])
+
+    @property
+    def unique_words(self) -> Set[str]:
+        return set(self.words)
 
     @property
     def word_count(self) -> int:
@@ -30,12 +34,32 @@ class DocSummary(NamedTuple):
 
     @property
     def unique_word_count(self) -> int:
-        return len(set(self.words))
+        return len(self.unique_words)
 
     @property
     def most_common_5_words(self) -> int:
         counter = Counter(self.words)
         return counter.most_common(5)
+
+    @property
+    def missing_meta_keywords(self) -> List[str]:
+        keywords = self.get_meta_by_name('keywords')
+        if keywords is None:
+            return []
+
+        missing_keywords = []
+        unique_words = self.unique_words
+        for keyword in keywords.content.split(' '):
+            if keyword not in unique_words:
+                missing_keywords.append(keyword)
+
+        return missing_keywords
+
+    def get_meta_by_name(self, name: str) -> Optional[DocMetaTag]:
+        for meta in self.meta_tags:
+            if meta.name == name:
+                return meta
+        return None
 
 
 class DocAnalyser:

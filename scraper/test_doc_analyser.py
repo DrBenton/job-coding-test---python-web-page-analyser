@@ -107,6 +107,26 @@ def test_parsing_most_common_words():
     assert doc_summary.most_common_5_words == [('a', 5), ('upon', 4), ('little', 3), ('tale', 2), ('Once', 1)]
 
 
+def test_parsing_missing_keywords():
+    html_doc = """
+    <html>
+        <head>
+            <meta charset="utf-8">
+            <meta name="keywords" content="Python programming language object oriented web free open source software license documentation download community">
+        </head>
+        <body>
+            Once upon a web time there were three little Python sisters downloading free open source 
+            <span>documentation</span> for their community
+        </body>
+    </html>
+    """
+
+    sut = DocAnalyser(_doc_fetcher_mock(html_doc))
+    doc_summary = sut.analyse('http://dummy.com')
+
+    assert doc_summary.missing_meta_keywords == ['programming', 'language', 'object', 'oriented', 'software', 'license', 'download']
+
+
 def _doc_fetcher_mock(expected_fetched_doc: str) ->Callable:
     def mock(url: str) ->str:
         return expected_fetched_doc
