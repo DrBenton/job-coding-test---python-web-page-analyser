@@ -1,0 +1,8 @@
+
+
+/pipenv/*
+!/pipenv/.gitkeep
+
+# Let's ignore the lock file for the moment...
+/Pipfile.lock
+
