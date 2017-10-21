@@ -1,4 +1,5 @@
 
+from collections import Counter
 from typing import Callable, List, NamedTuple
 from bs4 import BeautifulSoup
 import humanfriendly
@@ -20,12 +21,21 @@ class DocSummary(NamedTuple):
         return humanfriendly.format_size(self.doc_size)
 
     @property
+    def words(self) -> List[str]:
+        return self.body_content.split(' ')
+
+    @property
     def word_count(self) -> int:
-        return len(self.body_content.split(' '))
+        return len(self.words)
 
     @property
     def unique_word_count(self) -> int:
-        return len(set(self.body_content.split(' ')))
+        return len(set(self.words))
+
+    @property
+    def most_common_5_words(self) -> int:
+        counter = Counter(self.words)
+        return counter.most_common(5)
 
 
 class DocAnalyser:

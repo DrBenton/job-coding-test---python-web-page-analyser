@@ -98,6 +98,15 @@ def test_parsing_unique_word_count():
     assert doc_summary.unique_word_count == 9
 
 
+def test_parsing_most_common_words():
+    html_doc = '<html><head><title>Hello Plum!</title></head><body>Once a upon little upon upon a time upon there a were a little three little a sisters fairy tale tale</body></html>'
+
+    sut = DocAnalyser(_doc_fetcher_mock(html_doc))
+    doc_summary = sut.analyse('http://dummy.com')
+
+    assert doc_summary.most_common_5_words == [('a', 5), ('upon', 4), ('little', 3), ('tale', 2), ('Once', 1)]
+
+
 def _doc_fetcher_mock(expected_fetched_doc: str) ->Callable:
     def mock(url: str) ->str:
         return expected_fetched_doc
