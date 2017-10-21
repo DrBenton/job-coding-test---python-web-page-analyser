@@ -3,6 +3,7 @@ from typing import Callable, List, NamedTuple
 from bs4 import BeautifulSoup
 import humanfriendly
 
+
 class DocMetaTag(NamedTuple):
     name: str
     content: str
@@ -12,6 +13,7 @@ class DocSummary(NamedTuple):
     page_title: str
     meta_tags: List[DocMetaTag]
     doc_size: int
+    body_content: str
 
     @property
     def doc_size_human_friendly(self) -> str:
@@ -32,6 +34,9 @@ class DocAnalyser:
             'meta_tags': self._get_meta_tags(soup),
             'doc_size': len(html_doc),
         }
+        doc_summary_dict['body_content'] = soup.get_text()[
+            (len(doc_summary_dict['page_title']) if doc_summary_dict['page_title'] is not None else 0):
+        ]
 
         return DocSummary(**doc_summary_dict)
 

@@ -63,6 +63,22 @@ def test_doc_size():
     assert doc_summary.doc_size_human_friendly == '38.62 KB'
 
 
+def test_parsing_body_content():
+    html_doc_with_title = '<html><head><title>Hello Plum!</title></head><body>Once upon a <b>time</b> there were <span class="highlight"><i>three</i> little sisters</span></body></html>'
+
+    sut = DocAnalyser(doc_fetcher_mock(html_doc_with_title))
+    doc_summary = sut.analyse('http://dummy.com')
+
+    assert doc_summary.body_content == 'Once upon a time there were three little sisters'
+
+    html_doc_without_title = '<html><head></head><body>Once upon a <b>time</b> there were <span class="highlight"><i>three</i> little sisters</span></body></html>'
+
+    sut = DocAnalyser(doc_fetcher_mock(html_doc_without_title))
+    doc_summary = sut.analyse('http://dummy.com')
+
+    assert doc_summary.body_content == 'Once upon a time there were three little sisters'
+
+
 def doc_fetcher_mock(expected_fetched_doc: str) ->Callable:
     def mock(url: str) ->str:
         return expected_fetched_doc
